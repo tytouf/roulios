@@ -40,7 +40,12 @@ fn puts(cons: &Serial, s: &'static str) {
     }
 }
 
-
+#[no_mangle]
+pub extern fn tick() {
+    let uart = Usart::new(usart2());
+    puts(&uart, "tick!\n");
+}
+ 
 pub fn start() -> ! {
     let ser = Usart::new(usart2());
     let rcc = Rcc::new(rcc());
@@ -57,6 +62,12 @@ pub fn start() -> ! {
 
     ser.init();
     puts(&ser, "hello\n");
+
+    systick.set_reload(7200000);
+    systick.clear_value();
+    systick.enable(true, ClockSource::Core);
+
+    cpu::cortex_m3::enable_interrupts();
 
     loop { }
 }

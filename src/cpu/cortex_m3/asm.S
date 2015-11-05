@@ -13,19 +13,20 @@
 NAME:
 
 THUMB_FUNC(systick_handler)
-  mrs r0, psp
-  stmdb r0!, {r4-r11}
-  msr psp, r0
+  //mrs r0, psp
+  //stmdb r0!, {r4-r11}
+  //msr psp, r0
 
   //bl set_current_task_stack
   //bl handle_exception
   //bl reschedule
+  bl tick
 
   // r0 is the value of the next task psp returned by reschedule()
-  ldmfd r0!, {r4-r11}
-  msr psp, r0
+  //ldmfd r0!, {r4-r11}
+  //msr psp, r0
 
-  ldr lr, =0xfffffffd  /* return to thread mode using PSP */
+  ldr lr, =0xfffffff9  /* return to thread mode using main SP */
   bx lr
 
 THUMB_FUNC(pendsv_handler)
