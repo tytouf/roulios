@@ -1,0 +1,25 @@
+[package]
+name = "roulios"
+version = "0.1.0"
+authors = ["Christophe Augier <christophe.augier@gmail.com>"]
+build = "build.rs"
+
+[lib]
+name = "roulios"
+crate-type = ["staticlib"]
+
+[profile.release]
+lto = true
+
+[features]
+cpu_cortex_m3 = []
+board_stm32 = ["cpu_cortex_m3"]
+
+[dependencies.core]
+path = "lib/core"
+
+[dependencies.volatile]
+path = "lib/volatile.rs"
+
+[build-dependencies]
+gcc = "*"
