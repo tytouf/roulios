@@ -10,6 +10,7 @@ crate-type = ["staticlib"]
 
 [profile.release]
 lto = true
+opt-level = 1
 debug = true
 
 [features]
@@ -18,6 +19,12 @@ board_stm32 = ["cpu_cortex_m3"]
 
 [dependencies.core]
 path = "lib/core"
+
+[dependencies.alloc]
+path = "lib/alloc"
+
+[dependencies.alloc_system]
+path = "lib/alloc_system"
 
 [dependencies.volatile]
 path = "lib/volatile.rs"

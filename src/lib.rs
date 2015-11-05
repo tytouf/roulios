@@ -1,17 +1,22 @@
-#![feature(lang_items)]
+// This create is its own allocator
+#![feature(allocator)]
+#![allocator]
+
 #![feature(no_std)]
+#![feature(alloc)]
 #![feature(asm)]
 #![feature(core_str_ext)]
+#![feature(lang_items)]
 #![no_std]
 
 extern crate volatile;
-//extern crate alloc;
-//extern crate collections;
+extern crate alloc;
 
 pub mod cpu;
 pub mod boards;
 pub mod kernel;
 
+use alloc::boxed::Box;
 use cpu::cortex_m3::systick::{SystickDevice, Systick, ClockSource};
 use cpu::cortex_m3::scb::{SystemControlBlockDevice, SystemControlBlock};
 use boards::stm32::usart::{UsartDevice, Usart};
@@ -45,8 +50,33 @@ pub extern fn tick() {
     let uart = Usart::new(usart2());
     puts(&uart, "tick!\n");
 }
- 
+
+#[no_mangle]
+pub extern fn _Unwind_Resume() {
+    loop { }
+}
+
+struct TestAlloc {
+    abc: u32,
+    def: u8,
+}
+
+fn test_alloc() -> Box<u32> {
+    let mut counter: Box<u32> = Box::new(0);
+    let ta: Box<TestAlloc> = Box::new(TestAlloc { abc: 1, def: 1 });
+
+    while *counter < 1000 {
+        *counter += 1;
+    }
+    counter
+}
+
 pub fn start() -> ! {
+    kernel::alloc::init_allocator(&__MEMPOOL__ as *const u8 as usize,
+                                  core::mem::size_of_val(&__MEMPOOL__));
+    let x = test_alloc();
+    let a = Box::new(32u32);
+
     let ser = Usart::new(usart2());
     let rcc = Rcc::new(rcc());
     let gpioa = Gpio::new(gpioa());
