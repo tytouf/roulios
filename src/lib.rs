@@ -1,16 +1,16 @@
 // This create is its own allocator
 #![feature(allocator)]
 #![allocator]
-
+#![feature(collections)]
 #![feature(no_std)]
 #![feature(alloc)]
 #![feature(asm)]
-#![feature(core_str_ext)]
 #![feature(lang_items)]
 #![no_std]
 
 extern crate volatile;
 extern crate alloc;
+extern crate collections;
 
 pub mod cpu;
 pub mod boards;
@@ -23,6 +23,7 @@ use boards::stm32::usart::{UsartDevice, Usart};
 use boards::stm32::rcc::{RccDevice, Rcc, Apb1Peripheral, Apb2Peripheral};
 use boards::stm32::gpio::{GpioDevice, Gpio, Pin, InputMode, OutputMode, Speed};
 use kernel::serial::Serial;
+use collections::Vec;
 
 extern {
     static __RCC__: RccDevice;
@@ -61,14 +62,19 @@ struct TestAlloc {
     def: u8,
 }
 
-fn test_alloc() -> Box<u32> {
+fn test_alloc() -> Vec<u32> {
     let mut counter: Box<u32> = Box::new(0);
     let ta: Box<TestAlloc> = Box::new(TestAlloc { abc: 1, def: 1 });
 
     while *counter < 1000 {
         *counter += 1;
     }
-    counter
+
+    let mut ret: Vec<u32> = Vec::new();
+    ret.push(1);
+    ret.push(2);
+    ret.push(3);
+    ret
 }
 
 pub fn start() -> ! {

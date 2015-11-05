@@ -26,6 +26,12 @@ path = "lib/alloc"
 [dependencies.alloc_system]
 path = "lib/alloc_system"
 
+[dependencies.collections]
+path = "lib/collections"
+
+[dependencies.rustc_unicode]
+path = "lib/rustc_unicode"
+
 [dependencies.volatile]
 path = "lib/volatile.rs"
 

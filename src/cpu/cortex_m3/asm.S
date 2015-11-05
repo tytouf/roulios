@@ -30,9 +30,9 @@ THUMB_FUNC(systick_handler)
   bx lr
 
 THUMB_FUNC(pendsv_handler)
-  mrs r0, psp
-  ldmfd r0!, {r4-r11}
-  msr psp, r0
+  //mrs r0, psp
+  //ldmfd r0!, {r4-r11}
+  //msr psp, r0
 
   ldr r0, =0xfffffffd  /* return to thread mode using PSP */
   bx r0
