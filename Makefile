@@ -9,11 +9,12 @@ all: rlibs $(OBJ_DIR)/nk.bin
 clean:
 	cargo clean
 
-$(OBJ_DIR)/nk.elf:
+$(OBJ_DIR)/nk.elf: target/$(TARGET)/release/libroulios.a
 	$(PREFIX)-ld \
 	--gc-sections \
 	-T scripts/stm32-p103/layout.ld \
-	-o $@ target/$(TARGET)/release/libroulios.a
+	-o $@ \
+	$<
 	size $@
 
 $(OBJ_DIR)/nk.bin: $(OBJ_DIR)/nk.elf

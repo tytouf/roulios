@@ -10,6 +10,7 @@ crate-type = ["staticlib"]
 
 [profile.release]
 lto = true
+debug = true
 
 [features]
 cpu_cortex_m3 = []
