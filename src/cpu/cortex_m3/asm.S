@@ -20,6 +20,11 @@ THUMB_FUNC(systick_handler)
   //bl set_current_task_stack
   //bl handle_exception
   //bl reschedule
+  // Kernel state is store in one global variable
+  // gets a pointer to it and pass it to kernel_tick
+  ldr r0, =kernel_state
+  ldr r0, [r0]
+  bl kernel_tick
   bl tick
 
   // r0 is the value of the next task psp returned by reschedule()

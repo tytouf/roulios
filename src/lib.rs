@@ -47,7 +47,7 @@ fn puts(cons: &Serial, s: &'static str) {
 }
 
 #[no_mangle]
-pub extern fn tick() {
+pub fn tick() {
     let uart = Usart::new(usart2());
     puts(&uart, "tick!\n");
 }
@@ -82,6 +82,8 @@ pub fn start() -> ! {
                                   core::mem::size_of_val(&__MEMPOOL__));
     let x = test_alloc();
     let a = Box::new(32u32);
+
+    kernel::init();
 
     let ser = Usart::new(usart2());
     let rcc = Rcc::new(rcc());
