@@ -17,6 +17,7 @@ pub struct SystemControlBlock {
     device: &'static SystemControlBlockDevice,
 }
 
+#[allow(dead_code)]
 pub struct CpuId {
     part_no: u16,
     implementer: u8,
