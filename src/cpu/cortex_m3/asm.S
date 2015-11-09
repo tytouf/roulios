@@ -13,32 +13,29 @@
 NAME:
 
 THUMB_FUNC(systick_handler)
-  //mrs r0, psp
-  //stmdb r0!, {r4-r11}
-  //msr psp, r0
+  mrs r0, psp
+  stmdb r0!, {r4-r11}
+  msr psp, r0
 
-  //bl set_current_task_stack
-  //bl handle_exception
   //bl reschedule
   // Kernel state is store in one global variable
   // gets a pointer to it and pass it to kernel_tick
-  ldr r0, =kernel_state
-  ldr r0, [r0]
-  bl kernel_tick
-  bl tick
+  ldr r1, =kernel_state
+  ldr r1, [r1]
+  bl handle_exception
 
   // r0 is the value of the next task psp returned by reschedule()
-  //ldmfd r0!, {r4-r11}
-  //msr psp, r0
+  ldmfd r0!, {r4-r11}
+  msr psp, r0
 
-  ldr lr, =0xfffffff9  /* return to thread mode using main SP */
+  ldr lr, =0xfffffffd  /* return to thread mode using process SP */
   bx lr
 
 THUMB_FUNC(pendsv_handler)
-  //mrs r0, psp
-  //ldmfd r0!, {r4-r11}
-  //msr psp, r0
+  mrs r0, psp
+  ldmfd r0!, {r4-r11}
+  msr psp, r0
 
-  ldr r0, =0xfffffffd  /* return to thread mode using PSP */
+  ldr r0, =0xfffffffd  /* return to thread mode using process SP */
   bx r0
 

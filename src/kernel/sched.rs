@@ -5,7 +5,7 @@ use collections::Vec;
 #[allow(dead_code)]
 pub struct Task {
     stack_mem: Box<Stack>,
-    stack_ptr: usize,
+    pub stack_ptr: usize,
 }
 
 #[allow(dead_code)]
@@ -51,6 +51,14 @@ impl TaskList {
         }
         self.current = next;
         self.tasks.get(next).unwrap()
+    }
+
+    pub fn get_current_task(&self) -> &Box<Task> {
+        self.tasks.get(self.current).unwrap()
+    }
+
+    pub fn get_current_task_mut(&mut self) -> &mut Box<Task> {
+        self.tasks.get_mut(self.current).unwrap()
     }
 
     pub fn spawn_task<F>(&mut self, f: F) where F: FnOnce() -> (), F: 'static {

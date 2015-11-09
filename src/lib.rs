@@ -81,11 +81,17 @@ fn test_alloc() -> Vec<u32> {
 }
 
 fn task_1() {
-    loop { }
+    let uart = Usart::new(usart2());
+    loop {
+        puts(&uart, "task 1!\n");
+    }
 }
 
 fn task_2() {
-    loop { }
+    let uart = Usart::new(usart2());
+    loop {
+        puts(&uart, "task 2!\n");
+    }
 }
 
 pub fn start() -> ! {
@@ -122,6 +128,10 @@ pub fn start() -> ! {
 
     cpu::cortex_m3::enable_interrupts();
 
+    cpu::cortex_m3::set_psp(ks.tasks.get_current_task().stack_ptr as u32);
+    /* set PendSv to schedule idle task
+     */
+    scb.set_pendsv();
     loop { }
 }
 
