@@ -46,7 +46,7 @@ impl TaskList {
 
     pub fn reschedule(&mut self) -> &Box<Task> {
         let mut next = self.current + 1;
-        if next > self.tasks.len() {
+        if next >= self.tasks.len() {
             next = 0;
         }
         self.current = next;
