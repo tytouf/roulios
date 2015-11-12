@@ -104,6 +104,22 @@ fn task_2() {
     }
 }
 
+fn task_3() {
+    let uart = Usart::new(usart2());
+    loop {
+        wait_a_bit();
+        puts(&uart, "task 3!\n");
+    }
+}
+
+fn task_4() {
+    let uart = Usart::new(usart2());
+    loop {
+        wait_a_bit();
+        puts(&uart, "task 4!\n");
+    }
+}
+
 pub fn start() -> ! {
     kernel::alloc::init_allocator(&__MEMPOOL__ as *const u8 as usize,
                                   core::mem::size_of_val(&__MEMPOOL__));
@@ -136,6 +152,8 @@ pub fn start() -> ! {
 
     ks.tasks.spawn_task(task_1);
     ks.tasks.spawn_task(task_2);
+    ks.tasks.spawn_task(task_3);
+    ks.tasks.spawn_task(task_4);
 
     cpu::cortex_m3::enable_interrupts();
 
