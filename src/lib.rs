@@ -80,9 +80,18 @@ fn test_alloc() -> Vec<u32> {
     ret
 }
 
+fn wait_a_bit() {
+    let mut counter = 0;
+    while counter < 0x100000 {
+        counter += 1;
+        cpu::cortex_m3::nop();
+    }
+}
+
 fn task_1() {
     let uart = Usart::new(usart2());
     loop {
+        wait_a_bit();
         puts(&uart, "task 1!\n");
     }
 }
@@ -90,6 +99,7 @@ fn task_1() {
 fn task_2() {
     let uart = Usart::new(usart2());
     loop {
+        wait_a_bit();
         puts(&uart, "task 2!\n");
     }
 }
@@ -108,6 +118,7 @@ pub fn start() -> ! {
     let systick = Systick::new(systick());
     let scb = SystemControlBlock::new(scb());
 
+    rcc.reset();
     rcc.enable_apb2_peripheral(Apb2Peripheral::AFIO);
     rcc.enable_apb2_peripheral(Apb2Peripheral::IOPA);
     rcc.enable_apb1_peripheral(Apb1Peripheral::USART2);
@@ -129,6 +140,7 @@ pub fn start() -> ! {
     cpu::cortex_m3::enable_interrupts();
 
     cpu::cortex_m3::set_psp(ks.tasks.get_current_task().stack_ptr as u32);
+
     /* set PendSv to schedule idle task
      */
     scb.set_pendsv();
