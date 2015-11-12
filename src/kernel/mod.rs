@@ -26,6 +26,20 @@ pub fn handle_exception(sp: u32, state: &mut KernelState) -> usize {
     return next_task.stack_ptr;
 }
 
+#[no_mangle] // this function is called by asm
+pub fn handle_syscall(sp: u32, state: &mut KernelState) -> usize {
+    {
+        let cur_task = state.tasks.get_current_task_mut();
+        cur_task.stack_ptr = sp as usize;
+    }
+
+    /* For now only one syscall that is equivalent to yield()
+     */
+
+    let next_task = state.tasks.reschedule();
+    return next_task.stack_ptr;
+}
+
 pub fn init() -> &'static mut KernelState {
     let state = Box::new(
             KernelState { ticks: 0x0, tasks: sched::TaskList::new() });

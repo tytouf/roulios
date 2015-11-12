@@ -91,32 +91,36 @@ fn wait_a_bit() {
 fn task_1() {
     let uart = Usart::new(usart2());
     loop {
-        wait_a_bit();
         puts(&uart, "task 1!\n");
+        cpu::cortex_m3::svc();
     }
 }
 
 fn task_2() {
     let uart = Usart::new(usart2());
     loop {
-        wait_a_bit();
         puts(&uart, "task 2!\n");
+        cpu::cortex_m3::svc();
     }
 }
 
 fn task_3() {
     let uart = Usart::new(usart2());
     loop {
-        wait_a_bit();
-        puts(&uart, "task 3!\n");
+        puts(&uart, "task 3 part 1!\n");
+        cpu::cortex_m3::svc();
+        puts(&uart, "task 3 part 2!\n");
+        cpu::cortex_m3::svc();
+        puts(&uart, "task 3 part 3!\n");
+        cpu::cortex_m3::svc();
     }
 }
 
 fn task_4() {
     let uart = Usart::new(usart2());
     loop {
-        wait_a_bit();
         puts(&uart, "task 4!\n");
+        cpu::cortex_m3::svc();
     }
 }
 

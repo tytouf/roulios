@@ -5,6 +5,7 @@ extern {
     fn __STACK_TOP__();
     pub fn systick_handler();
     pub fn pendsv_handler();
+    pub fn svc_handler();
 }
 
 /// Exception "vector"
@@ -21,7 +22,7 @@ pub static VECTOR: [Option<unsafe extern fn()>; 16] = [
     None,                   // 8
     None,                   // 9
     None,                   // 10
-    Some(abort),            // 11
+    Some(svc_handler),      // 11
     Some(abort),            // 12
     Some(abort),            // 13
     Some(pendsv_handler),   // 14

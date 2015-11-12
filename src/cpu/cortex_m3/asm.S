@@ -17,12 +17,29 @@ THUMB_FUNC(systick_handler)
   stmdb r0!, {r4-r11}
   msr psp, r0
 
-  //bl reschedule
-  // Kernel state is store in one global variable
-  // gets a pointer to it and pass it to kernel_tick
+  // Kernel state is stored in one global variable
+  // gets a pointer to it and pass it to handle_exception
   ldr r1, =kernel_state
   ldr r1, [r1]
   bl handle_exception
+
+  // r0 is the value of the next task psp returned by reschedule()
+  ldmfd r0!, {r4-r11}
+  msr psp, r0
+
+  ldr lr, =0xfffffffd  /* return to thread mode using process SP */
+  bx lr
+
+THUMB_FUNC(svc_handler)
+  mrs r0, psp
+  stmdb r0!, {r4-r11}
+  msr psp, r0
+
+  // Kernel state is stored in one global variable
+  // gets a pointer to it and pass it to handle_exception
+  ldr r1, =kernel_state
+  ldr r1, [r1]
+  bl handle_syscall
 
   // r0 is the value of the next task psp returned by reschedule()
   ldmfd r0!, {r4-r11}

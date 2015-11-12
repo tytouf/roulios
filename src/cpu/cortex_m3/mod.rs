@@ -31,6 +31,10 @@ pub fn nop() {
     unsafe { asm!("nop"); }
 }
 
+pub fn svc() {
+    unsafe { asm!("svc 0"); }
+}
+
 pub fn enable_interrupts() {
     unsafe { asm!("cpsie i"); }
 }

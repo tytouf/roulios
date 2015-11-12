@@ -2,10 +2,17 @@
 use alloc::boxed::Box;
 use collections::Vec;
 
+enum State {
+    Running,
+    Ready,
+    Blocked,
+}
+
 #[allow(dead_code)]
 pub struct Task {
     stack_mem: Box<Stack>,
     pub stack_ptr: usize,
+    state: State,
 }
 
 #[allow(dead_code)]
@@ -49,8 +56,11 @@ impl TaskList {
         if next >= self.tasks.len() {
             next = 0;
         }
+        self.get_current_task_mut().state = State::Ready;
         self.current = next;
-        self.tasks.get(next).unwrap()
+        let next_task = self.tasks.get_mut(next).unwrap();
+        next_task.state = State::Running;
+        next_task
     }
 
     pub fn get_current_task(&self) -> &Box<Task> {
@@ -85,7 +95,8 @@ impl TaskList {
         });
         let stack_ptr = (&*stack_mem as *const _ as usize) + 192;
 
-        let mut task = Box::new(Task { stack_mem: stack_mem, stack_ptr: stack_ptr });
+        let mut task = Box::new(Task {
+            stack_mem: stack_mem, stack_ptr: stack_ptr, state: State::Ready });
         self.tasks.push(task);
     }
 }
