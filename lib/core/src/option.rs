@@ -275,6 +275,7 @@ impl<T> Option<T> {
     ///
     /// ```
     /// #![feature(as_slice)]
+    /// # #![allow(deprecated)]
     ///
     /// let mut x = Some("Diamonds");
     /// {
@@ -290,6 +291,7 @@ impl<T> Option<T> {
                reason = "waiting for mut conventions",
                issue = "27776")]
     #[deprecated(since = "1.4.0", reason = "niche API, unclear of usefulness")]
+    #[allow(deprecated)]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         match *self {
             Some(ref mut x) => {
@@ -694,6 +696,7 @@ impl<T> Option<T> {
     #[unstable(feature = "as_slice", reason = "unsure of the utility here",
                issue = "27776")]
     #[deprecated(since = "1.4.0", reason = "niche API, unclear of usefulness")]
+    #[allow(deprecated)]
     pub fn as_slice(&self) -> &[T] {
         match *self {
             Some(ref x) => slice::ref_slice(x),
@@ -706,7 +709,8 @@ impl<T> Option<T> {
 }
 
 impl<'a, T: Clone> Option<&'a T> {
-    /// Maps an Option<&T> to an Option<T> by cloning the contents of the Option.
+    /// Maps an `Option<&T>` to an `Option<T>` by cloning the contents of the
+    /// option.
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn cloned(self) -> Option<T> {
         self.map(|t| t.clone())
@@ -753,7 +757,6 @@ impl<T: Default> Option<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Default for Option<T> {
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn default() -> Option<T> { None }
 }
 
@@ -937,7 +940,6 @@ impl<A, V: FromIterator<A>> FromIterator<Option<A>> for Option<V> {
     /// assert!(res == Some(vec!(2, 3)));
     /// ```
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn from_iter<I: IntoIterator<Item=Option<A>>>(iter: I) -> Option<V> {
         // FIXME(#11084): This could be replaced with Iterator::scan when this
         // performance bug is closed.

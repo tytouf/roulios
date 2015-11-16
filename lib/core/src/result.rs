@@ -16,6 +16,7 @@
 //! and containing an error value.
 //!
 //! ```
+//! # #[allow(dead_code)]
 //! enum Result<T, E> {
 //!    Ok(T),
 //!    Err(E)
@@ -104,6 +105,7 @@
 //! something like this:
 //!
 //! ```no_run
+//! # #![allow(unused_must_use)] // \o/
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
@@ -117,16 +119,15 @@
 //! warning (by default, controlled by the `unused_must_use` lint).
 //!
 //! You might instead, if you don't want to handle the error, simply
-//! panic, by converting to an `Option` with `ok`, then asserting
-//! success with `expect`. This will panic if the write fails, proving
-//! a marginally useful message indicating why:
+//! assert success with `expect`. This will panic if the
+//! write fails, providing a marginally useful message indicating why:
 //!
 //! ```{.no_run}
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
 //! let mut file = File::create("valuable_data.txt").unwrap();
-//! file.write_all(b"important message").ok().expect("failed to write message");
+//! file.write_all(b"important message").expect("failed to write message");
 //! ```
 //!
 //! You might also simply assert success:
@@ -144,6 +145,7 @@
 //! # use std::fs::File;
 //! # use std::io::prelude::*;
 //! # use std::io;
+//! # #[allow(dead_code)]
 //! fn write_message() -> io::Result<()> {
 //!     let mut file = try!(File::create("valuable_data.txt"));
 //!     try!(file.write_all(b"important message"));
@@ -161,6 +163,7 @@
 //! It replaces this:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //! use std::io;
@@ -190,6 +193,7 @@
 //! With this:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //! use std::io;
@@ -258,7 +262,6 @@ pub enum Result<T, E> {
 // Type implementation
 /////////////////////////////////////////////////////////////////////////////
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T, E> Result<T, E> {
     /////////////////////////////////////////////////////////////////////////
     // Querying the contained values
@@ -408,6 +411,7 @@ impl<T, E> Result<T, E> {
     #[unstable(feature = "as_slice", reason = "unsure of the utility here",
                issue = "27776")]
     #[deprecated(since = "1.4.0", reason = "niche API, unclear of usefulness")]
+    #[allow(deprecated)]
     pub fn as_slice(&self) -> &[T] {
         match *self {
             Ok(ref x) => slice::ref_slice(x),
@@ -423,6 +427,7 @@ impl<T, E> Result<T, E> {
     ///
     /// ```
     /// #![feature(as_slice)]
+    /// # #![allow(deprecated)]
     ///
     /// let mut x: Result<&str, u32> = Ok("Gold");
     /// {
@@ -441,6 +446,7 @@ impl<T, E> Result<T, E> {
                reason = "waiting for mut conventions",
                issue = "27776")]
     #[deprecated(since = "1.4.0", reason = "niche API, unclear of usefulness")]
+    #[allow(deprecated)]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         match *self {
             Ok(ref mut x) => slice::mut_ref_slice(x),
@@ -456,7 +462,7 @@ impl<T, E> Result<T, E> {
     // Transforming contained values
     /////////////////////////////////////////////////////////////////////////
 
-    /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to an
+    /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a
     /// contained `Ok` value, leaving an `Err` value untouched.
     ///
     /// This function can be used to compose the results of two functions.
@@ -484,7 +490,7 @@ impl<T, E> Result<T, E> {
         }
     }
 
-    /// Maps a `Result<T, E>` to `Result<T, F>` by applying a function to an
+    /// Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a
     /// contained `Err` value, leaving an `Ok` value untouched.
     ///
     /// This function can be used to pass through a successful result while handling
@@ -707,7 +713,6 @@ impl<T, E> Result<T, E> {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T, E: fmt::Debug> Result<T, E> {
     /// Unwraps a result, yielding the content of an `Ok`.
     ///
@@ -757,7 +762,6 @@ impl<T, E: fmt::Debug> Result<T, E> {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: fmt::Debug, E> Result<T, E> {
     /// Unwraps a result, yielding the content of an `Err`.
     ///

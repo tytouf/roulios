@@ -72,6 +72,8 @@ impl TaskList {
     }
 
     pub fn spawn_task<F>(&mut self, f: F) where F: FnOnce() -> (), F: 'static {
+        //let bf = Box::new(f);
+        //let pc = Box::into_raw(bf) as u32; //unsafe { *(&f as *const _ as *const u32) };
         let pc = unsafe { *(&f as *const _ as *const u32) };
 
         let stack_mem = Box::new(Stack {

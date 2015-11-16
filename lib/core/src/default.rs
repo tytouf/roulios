@@ -15,6 +15,7 @@
 //! that define a set of options:
 //!
 //! ```
+//! # #[allow(dead_code)]
 //! struct SomeOptions {
 //!     foo: i32,
 //!     bar: f32,
@@ -24,6 +25,7 @@
 //! How can we define some default values? You can use `Default`:
 //!
 //! ```
+//! # #[allow(dead_code)]
 //! #[derive(Default)]
 //! struct SomeOptions {
 //!     foo: i32,
@@ -40,6 +42,7 @@
 //! If you have your own type, you need to implement `Default` yourself:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! enum Kind {
 //!     A,
 //!     B,
@@ -66,6 +69,7 @@
 //! If you want to override a particular option, but still retain the other defaults:
 //!
 //! ```
+//! # #[allow(dead_code)]
 //! # #[derive(Default)]
 //! # struct SomeOptions {
 //! #     foo: i32,
@@ -78,6 +82,8 @@
 
 #![stable(feature = "rust1", since = "1.0.0")]
 
+use marker::Sized;
+
 /// A trait for giving a type a useful default value.
 ///
 /// A struct can derive default implementations of `Default` for basic types using
@@ -86,6 +92,7 @@
 /// # Examples
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// #[derive(Default)]
 /// struct SomeOptions {
 ///     foo: i32,
@@ -93,7 +100,7 @@
 /// }
 /// ```
 #[stable(feature = "rust1", since = "1.0.0")]
-pub trait Default {
+pub trait Default: Sized {
     /// Returns the "default value" for a type.
     ///
     /// Default values are often some kind of initial value, identity value, or anything else that
@@ -112,6 +119,7 @@ pub trait Default {
     /// Making your own:
     ///
     /// ```
+    /// # #[allow(dead_code)]
     /// enum Kind {
     ///     A,
     ///     B,
@@ -131,7 +139,6 @@ macro_rules! default_impl {
         #[stable(feature = "rust1", since = "1.0.0")]
         impl Default for $t {
             #[inline]
-            #[stable(feature = "rust1", since = "1.0.0")]
             fn default() -> $t { $v }
         }
     }

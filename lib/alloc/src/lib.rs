@@ -70,7 +70,7 @@
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/nightly/",
        issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
-       test(no_crate_inject))]
+       test(no_crate_inject, attr(allow(unused_variables), deny(warnings))))]
 #![no_std]
 #![cfg_attr(not(stage0), needs_allocator)]
 
@@ -90,13 +90,21 @@
 #![feature(placement_in_syntax)]
 #![feature(placement_new_protocol)]
 #![feature(raw)]
+#![feature(shared)]
 #![feature(staged_api)]
 #![feature(unboxed_closures)]
 #![feature(unique)]
 #![feature(unsafe_no_drop_flag, filling_drop)]
+// SNAP 1af31d4
+#![allow(unused_features)]
+// SNAP 1af31d4
+#![allow(unused_attributes)]
+#![feature(dropck_parametricity)]
 #![feature(unsize)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(drop_in_place)]
+
 #![cfg_attr(stage0, feature(alloc_system))]
 #![cfg_attr(not(stage0), feature(needs_allocator))]
 

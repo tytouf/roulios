@@ -55,6 +55,7 @@ impl String {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(unused_mut)]
     /// let mut s = String::new();
     /// ```
     #[inline]
@@ -73,6 +74,20 @@ impl String {
     ///
     /// ```
     /// let mut s = String::with_capacity(10);
+    ///
+    /// // The String contains no chars, even though it has capacity for more
+    /// assert_eq!(s.len(), 0);
+    ///
+    /// // These are all done without reallocating...
+    /// let cap = s.capacity();
+    /// for i in 0..10 {
+    ///     s.push('a');
+    /// }
+    ///
+    /// assert_eq!(s.capacity(), cap);
+    ///
+    /// // ...but this may make the vector reallocate
+    /// s.push('a');
     /// ```
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -92,26 +107,61 @@ impl String {
         panic!("not available with cfg(test)");
     }
 
-    /// Returns the vector as a string buffer, if possible, taking care not to
-    /// copy it.
+    /// Converts a vector of bytes to a `String`.
+    ///
+    /// A string slice (`&str`) is made of bytes (`u8`), and a vector of bytes
+    /// (`Vec<u8>`) is made of bytes, so this function converts between the
+    /// two. Not all byte slices are valid `String`s, however: `String`
+    /// requires that it is valid UTF-8. `from_utf8()` checks to ensure that
+    /// the bytes are valid UTF-8, and then does the conversion.
+    ///
+    /// If you are sure that the byte slice is valid UTF-8, and you don't want
+    /// to incur the overhead of the validity check, there is an unsafe version
+    /// of this function, [`from_utf8_unchecked()`][fromutf8], which has the
+    /// same behavior but skips the check.
+    ///
+    /// [fromutf8]: struct.String.html#method.from_utf8_unchecked
+    ///
+    /// This method will take care to not copy the vector, for efficiency's
+    /// sake.
+    ///
+    /// If you need a `&str` instead of a `String`, consider
+    /// [`str::from_utf8()`][str].
+    ///
+    /// [str]: ../str/fn.from_utf8.html
     ///
     /// # Failure
     ///
-    /// If the given vector is not valid UTF-8, then the original vector and the
-    /// corresponding error is returned.
+    /// Returns `Err` if the slice is not UTF-8 with a description as to why the
+    /// provided bytes are not UTF-8. The vector you moved in is also included.
     ///
     /// # Examples
     ///
-    /// ```
-    /// let hello_vec = vec![104, 101, 108, 108, 111];
-    /// let s = String::from_utf8(hello_vec).unwrap();
-    /// assert_eq!(s, "hello");
+    /// Basic usage:
     ///
-    /// let invalid_vec = vec![240, 144, 128];
-    /// let s = String::from_utf8(invalid_vec).err().unwrap();
-    /// let err = s.utf8_error();
-    /// assert_eq!(s.into_bytes(), [240, 144, 128]);
     /// ```
+    /// // some bytes, in a vector
+    /// let sparkle_heart = vec![240, 159, 146, 150];
+    ///
+    /// // We know these bytes are valid, so just use `unwrap()`.
+    /// let sparkle_heart = String::from_utf8(sparkle_heart).unwrap();
+    ///
+    /// assert_eq!("💖", sparkle_heart);
+    /// ```
+    ///
+    /// Incorrect bytes:
+    ///
+    /// ```
+    /// // some invalid bytes, in a vector
+    /// let sparkle_heart = vec![0, 159, 146, 150];
+    ///
+    /// assert!(String::from_utf8(sparkle_heart).is_err());
+    /// ```
+    ///
+    /// See the docs for [`FromUtf8Error`][error] for more details on what you
+    /// can do with this error.
+    ///
+    /// [error]: struct.FromUtf8Error.html
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn from_utf8(vec: Vec<u8>) -> Result<String, FromUtf8Error> {
@@ -121,15 +171,49 @@ impl String {
         }
     }
 
-    /// Converts a vector of bytes to a new UTF-8 string.
-    /// Any invalid UTF-8 sequences are replaced with U+FFFD REPLACEMENT CHARACTER.
+    /// Converts a slice of bytes to a `String`, including invalid characters.
+    ///
+    /// A string slice (`&str`) is made of bytes (`u8`), and a slice of bytes
+    /// (`&[u8]`) is made of bytes, so this function converts between the two.
+    /// Not all byte slices are valid string slices, however: `&str` requires
+    /// that it is valid UTF-8. During this conversion, `from_utf8_lossy()`
+    /// will replace any invalid UTF-8 sequences with
+    /// `U+FFFD REPLACEMENT CHARACTER`, which looks like this: �
+    ///
+    /// If you are sure that the byte slice is valid UTF-8, and you don't want
+    /// to incur the overhead of the conversion, there is an unsafe version
+    /// of this function, [`from_utf8_unchecked()`][fromutf8], which has the
+    /// same behavior but skips the checks.
+    ///
+    /// [fromutf8]: struct.String.html#method.from_utf8_unchecked
+    ///
+    /// If you need a `&str` instead of a `String`, consider
+    /// [`str::from_utf8()`][str].
+    ///
+    /// [str]: ../str/fn.from_utf8.html
     ///
     /// # Examples
     ///
+    /// Basic usage:
+    ///
     /// ```
+    /// // some bytes, in a vector
+    /// let sparkle_heart = vec![240, 159, 146, 150];
+    ///
+    /// // We know these bytes are valid, so just use `unwrap()`.
+    /// let sparkle_heart = String::from_utf8(sparkle_heart).unwrap();
+    ///
+    /// assert_eq!("💖", sparkle_heart);
+    /// ```
+    ///
+    /// Incorrect bytes:
+    ///
+    /// ```
+    /// // some invalid bytes
     /// let input = b"Hello \xF0\x90\x80World";
     /// let output = String::from_utf8_lossy(input);
-    /// assert_eq!(output, "Hello \u{FFFD}World");
+    ///
+    /// assert_eq!("Hello �World", output);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn from_utf8_lossy<'a>(v: &'a [u8]) -> Cow<'a, str> {
@@ -292,7 +376,7 @@ impl String {
 
     /// Creates a new `String` from a length, capacity, and pointer.
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This is _very_ unsafe because:
     ///
@@ -309,9 +393,33 @@ impl String {
         }
     }
 
-    /// Converts a vector of bytes to a new `String` without checking if
-    /// it contains valid UTF-8. This is unsafe because it assumes that
-    /// the UTF-8-ness of the vector has already been validated.
+    /// Converts a vector of bytes to a `String` without checking that the
+    /// string contains valid UTF-8.
+    ///
+    /// See the safe version, [`from_utf8()`][fromutf8], for more.
+    ///
+    /// [fromutf8]: struct.String.html#method.from_utf8
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because it does not check that the bytes passed to
+    /// it are valid UTF-8. If this constraint is violated, undefined behavior
+    /// results, as the rest of Rust assumes that `String`s are valid UTF-8.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// // some bytes, in a vector
+    /// let sparkle_heart = vec![240, 159, 146, 150];
+    ///
+    /// let sparkle_heart = unsafe {
+    ///     String::from_utf8_unchecked(sparkle_heart)
+    /// };
+    ///
+    /// assert_eq!("💖", sparkle_heart);
+    /// ```
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub unsafe fn from_utf8_unchecked(bytes: Vec<u8>) -> String {
@@ -870,7 +978,7 @@ impl PartialEq for String {
 macro_rules! impl_eq {
     ($lhs:ty, $rhs: ty) => {
         #[stable(feature = "rust1", since = "1.0.0")]
-        impl<'a> PartialEq<$rhs> for $lhs {
+        impl<'a, 'b> PartialEq<$rhs> for $lhs {
             #[inline]
             fn eq(&self, other: &$rhs) -> bool { PartialEq::eq(&self[..], &other[..]) }
             #[inline]
@@ -878,7 +986,7 @@ macro_rules! impl_eq {
         }
 
         #[stable(feature = "rust1", since = "1.0.0")]
-        impl<'a> PartialEq<$lhs> for $rhs {
+        impl<'a, 'b> PartialEq<$lhs> for $rhs {
             #[inline]
             fn eq(&self, other: &$lhs) -> bool { PartialEq::eq(&self[..], &other[..]) }
             #[inline]
@@ -891,28 +999,12 @@ macro_rules! impl_eq {
 impl_eq! { String, str }
 impl_eq! { String, &'a str }
 impl_eq! { Cow<'a, str>, str }
+impl_eq! { Cow<'a, str>, &'b str }
 impl_eq! { Cow<'a, str>, String }
-
-#[stable(feature = "rust1", since = "1.0.0")]
-impl<'a, 'b> PartialEq<&'b str> for Cow<'a, str> {
-    #[inline]
-    fn eq(&self, other: &&'b str) -> bool { PartialEq::eq(&self[..], &other[..]) }
-    #[inline]
-    fn ne(&self, other: &&'b str) -> bool { PartialEq::ne(&self[..], &other[..]) }
-}
-
-#[stable(feature = "rust1", since = "1.0.0")]
-impl<'a, 'b> PartialEq<Cow<'a, str>> for &'b str {
-    #[inline]
-    fn eq(&self, other: &Cow<'a, str>) -> bool { PartialEq::eq(&self[..], &other[..]) }
-    #[inline]
-    fn ne(&self, other: &Cow<'a, str>) -> bool { PartialEq::ne(&self[..], &other[..]) }
-}
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl Default for String {
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn default() -> String {
         String::new()
     }
@@ -1038,11 +1130,9 @@ impl ops::DerefMut for String {
 }
 
 /// Error returned from `String::from`
-#[unstable(feature = "str_parse_error", reason = "may want to be replaced with \
-                                                  Void if it ever exists",
-           issue = "27734")]
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct ParseError(());
+#[stable(feature = "str_parse_error", since = "1.5.0")]
+#[derive(Copy)]
+pub enum ParseError {}
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl FromStr for String {
@@ -1052,6 +1142,26 @@ impl FromStr for String {
         Ok(String::from(s))
     }
 }
+
+impl Clone for ParseError {
+    fn clone(&self) -> ParseError {
+        match *self {}
+    }
+}
+
+impl fmt::Debug for ParseError {
+    fn fmt(&self, _: &mut fmt::Formatter) -> fmt::Result {
+        match *self {}
+    }
+}
+
+impl PartialEq for ParseError {
+    fn eq(&self, _: &ParseError) -> bool {
+        match *self {}
+    }
+}
+
+impl Eq for ParseError {}
 
 /// A generic trait for converting a value to a string
 #[stable(feature = "rust1", since = "1.0.0")]

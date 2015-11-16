@@ -53,11 +53,13 @@ pub fn tick() {
     puts(&uart, "tick!\n");
 }
 
+/*
 #[no_mangle]
 #[allow(non_snake_case)]
 pub extern fn _Unwind_Resume() {
     loop { }
 }
+*/
 
 #[allow(dead_code)]
 struct TestAlloc {
@@ -80,6 +82,7 @@ fn test_alloc() -> Vec<u32> {
     ret
 }
 
+/*
 fn wait_a_bit() {
     let mut counter = 0;
     while counter < 0x100000 {
@@ -87,6 +90,7 @@ fn wait_a_bit() {
         cpu::cortex_m3::nop();
     }
 }
+*/
 
 fn task_1() {
     let uart = Usart::new(usart2());
@@ -157,7 +161,13 @@ pub fn start() -> ! {
     ks.tasks.spawn_task(task_1);
     ks.tasks.spawn_task(task_2);
     ks.tasks.spawn_task(task_3);
-    ks.tasks.spawn_task(task_4);
+    /*
+    ks.tasks.spawn_task(move || {
+        loop {
+            puts(&ser, "moved 4\n");
+        }
+    });
+    */
 
     cpu::cortex_m3::enable_interrupts();
 

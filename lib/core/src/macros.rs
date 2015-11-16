@@ -34,6 +34,8 @@ macro_rules! panic {
 /// This will invoke the `panic!` macro if the provided expression cannot be
 /// evaluated to `true` at runtime.
 ///
+/// This macro has a second version, where a custom panic message can be provided.
+///
 /// # Examples
 ///
 /// ```
@@ -87,7 +89,7 @@ macro_rules! assert_eq {
             (left_val, right_val) => {
                 if !(*left_val == *right_val) {
                     panic!("assertion failed: `(left == right)` \
-                           (left: `{:?}`, right: `{:?}`)", *left_val, *right_val)
+                           (left: `{:?}`, right: `{:?}`)", left_val, right_val)
                 }
             }
         }
@@ -98,6 +100,9 @@ macro_rules! assert_eq {
 ///
 /// This will invoke the `panic!` macro if the provided expression cannot be
 /// evaluated to `true` at runtime.
+///
+/// Like `assert!`, this macro also has a second version, where a custom panic
+/// message can be provided.
 ///
 /// Unlike `assert!`, `debug_assert!` statements are only enabled in non
 /// optimized builds by default. An optimized build will omit all
@@ -168,8 +173,14 @@ macro_rules! try {
     })
 }
 
-/// Use the `format!` syntax to write data into a buffer of type `&mut Write`.
-/// See `std::fmt` for more information.
+/// Use the `format!` syntax to write data into a buffer.
+///
+/// This macro is typically used with a buffer of `&mut `[`Write`][write].
+///
+/// See [`std::fmt`][fmt] for more information on format syntax.
+///
+/// [fmt]: fmt/index.html
+/// [write]: io/trait.Write.html
 ///
 /// # Examples
 ///
@@ -179,14 +190,34 @@ macro_rules! try {
 /// let mut w = Vec::new();
 /// write!(&mut w, "test").unwrap();
 /// write!(&mut w, "formatted {}", "arguments").unwrap();
+///
+/// assert_eq!(w, b"testformatted arguments");
 /// ```
 #[macro_export]
 macro_rules! write {
     ($dst:expr, $($arg:tt)*) => ($dst.write_fmt(format_args!($($arg)*)))
 }
 
-/// Equivalent to the `write!` macro, except that a newline is appended after
-/// the message is written.
+/// Use the `format!` syntax to write data into a buffer, appending a newline.
+///
+/// This macro is typically used with a buffer of `&mut `[`Write`][write].
+///
+/// See [`std::fmt`][fmt] for more information on format syntax.
+///
+/// [fmt]: fmt/index.html
+/// [write]: io/trait.Write.html
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+///
+/// let mut w = Vec::new();
+/// writeln!(&mut w, "test").unwrap();
+/// writeln!(&mut w, "formatted {}", "arguments").unwrap();
+///
+/// assert_eq!(&w[..], "test\nformatted arguments\n".as_bytes());
+/// ```
 #[macro_export]
 #[stable(feature = "rust1", since = "1.0.0")]
 macro_rules! writeln {
@@ -216,6 +247,7 @@ macro_rules! writeln {
 /// Match arms:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// fn foo(x: Option<i32>) {
 ///     match x {
 ///         Some(n) if n >= 0 => println!("Some(Non-negative)"),
@@ -229,6 +261,7 @@ macro_rules! writeln {
 /// Iterators:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// fn divide_by_three(x: u32) -> u32 { // one of the poorest implementations of x/3
 ///     for i in 0.. {
 ///         if 3*i < i { panic!("u32 overflow"); }
@@ -253,7 +286,7 @@ macro_rules! unreachable {
     });
 }
 
-/// A standardised placeholder for marking unfinished code. It panics with the
+/// A standardized placeholder for marking unfinished code. It panics with the
 /// message `"not yet implemented"` when executed.
 ///
 /// This can be useful if you are prototyping and are just looking to have your
@@ -277,27 +310,27 @@ macro_rules! unreachable {
 ///
 /// ```
 /// # trait Foo {
-/// #     fn foo(&self);
 /// #     fn bar(&self);
+/// #     fn baz(&self);
 /// # }
 /// struct MyStruct;
 ///
 /// impl Foo for MyStruct {
-///     fn foo(&self) {
+///     fn bar(&self) {
 ///         // implementation goes here
 ///     }
 ///
-///     fn bar(&self) {
-///         // let's not worry about implementing bar() for now
+///     fn baz(&self) {
+///         // let's not worry about implementing baz() for now
 ///         unimplemented!();
 ///     }
 /// }
 ///
 /// fn main() {
 ///     let s = MyStruct;
-///     s.foo();
+///     s.bar();
 ///
-///     // we aren't even using bar() yet, so this is fine.
+///     // we aren't even using baz() yet, so this is fine.
 /// }
 /// ```
 #[macro_export]

@@ -76,6 +76,7 @@
 //! a trait method that was originally defined to take `&self`.
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! use std::cell::RefCell;
 //!
 //! struct Graph {
@@ -125,6 +126,7 @@
 //! }
 //!
 //! struct RcBox<T> {
+//! # #[allow(dead_code)]
 //!     value: T,
 //!     refcount: Cell<usize>
 //! }
@@ -214,7 +216,7 @@ impl<T:Copy> Cell<T> {
 
     /// Returns a reference to the underlying `UnsafeCell`.
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This function is `unsafe` because `UnsafeCell`'s field is public.
     ///
@@ -249,7 +251,6 @@ impl<T:Copy> Clone for Cell<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T:Default + Copy> Default for Cell<T> {
-    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     fn default() -> Cell<T> {
         Cell::new(Default::default())
@@ -468,7 +469,6 @@ impl<T: Clone> Clone for RefCell<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T:Default> Default for RefCell<T> {
-    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     fn default() -> RefCell<T> {
         RefCell::new(Default::default())
@@ -598,7 +598,7 @@ impl<'b, T: ?Sized> Ref<'b, T> {
         }
     }
 
-    /// Make a new `Ref` for a optional component of the borrowed data, e.g. an
+    /// Make a new `Ref` for an optional component of the borrowed data, e.g. an
     /// enum variant.
     ///
     /// The `RefCell` is already immutably borrowed, so this cannot fail.
@@ -668,7 +668,7 @@ impl<'b, T: ?Sized> RefMut<'b, T> {
         }
     }
 
-    /// Make a new `RefMut` for a optional component of the borrowed data, e.g.
+    /// Make a new `RefMut` for an optional component of the borrowed data, e.g.
     /// an enum variant.
     ///
     /// The `RefCell` is already mutably borrowed, so this cannot fail.
@@ -778,15 +778,13 @@ impl<'b, T: ?Sized> DerefMut for RefMut<'b, T> {
 /// use std::cell::UnsafeCell;
 /// use std::marker::Sync;
 ///
+/// # #[allow(dead_code)]
 /// struct NotThreadSafe<T> {
 ///     value: UnsafeCell<T>,
 /// }
 ///
 /// unsafe impl<T> Sync for NotThreadSafe<T> {}
 /// ```
-///
-/// **NOTE:** `UnsafeCell<T>`'s fields are public to allow static initializers. It is not
-/// recommended to access its fields directly, `get` should be used instead.
 #[lang = "unsafe_cell"]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct UnsafeCell<T: ?Sized> {
@@ -799,8 +797,7 @@ impl<T> UnsafeCell<T> {
     /// Constructs a new instance of `UnsafeCell` which will wrap the specified
     /// value.
     ///
-    /// All access to the inner value through methods is `unsafe`, and it is highly discouraged to
-    /// access the fields directly.
+    /// All access to the inner value through methods is `unsafe`.
     ///
     /// # Examples
     ///
@@ -817,7 +814,7 @@ impl<T> UnsafeCell<T> {
 
     /// Unwraps the value.
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This function is unsafe because this thread or another thread may currently be
     /// inspecting the inner value.

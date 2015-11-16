@@ -153,7 +153,8 @@ unsafe impl<T> Sync for AtomicPtr<T> {}
 #[stable(feature = "rust1", since = "1.0.0")]
 #[derive(Copy, Clone)]
 pub enum Ordering {
-    /// No ordering constraints, only atomic operations.
+    /// No ordering constraints, only atomic operations. Corresponds to LLVM's
+    /// `Monotonic` ordering.
     #[stable(feature = "rust1", since = "1.0.0")]
     Relaxed,
     /// When coupled with a store, all previous writes become visible
@@ -437,7 +438,6 @@ impl AtomicBool {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl AtomicIsize {
     /// Creates a new `AtomicIsize`.
     ///
@@ -630,7 +630,6 @@ impl AtomicIsize {
     }
 }
 
-#[stable(feature = "rust1", since = "1.0.0")]
 impl AtomicUsize {
     /// Creates a new `AtomicUsize`.
     ///

@@ -140,8 +140,6 @@ impl Ordering {
     /// This method can be used to reverse a comparison:
     ///
     /// ```
-    /// use std::cmp::Ordering;
-    ///
     /// let mut data: &mut [_] = &mut [2, 10, 5, 8];
     ///
     /// // sort the array from largest to smallest.
@@ -199,7 +197,6 @@ impl Eq for Ordering {}
 #[stable(feature = "rust1", since = "1.0.0")]
 impl Ord for Ordering {
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn cmp(&self, other: &Ordering) -> Ordering {
         (*self as i32).cmp(&(*other as i32))
     }
@@ -208,7 +205,6 @@ impl Ord for Ordering {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl PartialOrd for Ordering {
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn partial_cmp(&self, other: &Ordering) -> Option<Ordering> {
         (*self as i32).partial_cmp(&(*other as i32))
     }
@@ -218,7 +214,7 @@ impl PartialOrd for Ordering {
 ///
 /// The comparison must satisfy, for all `a`, `b` and `c`:
 ///
-/// - antisymmetry: if `a < b` then `!(a > b)` and vice versa; and
+/// - antisymmetry: if `a < b` then `!(a > b)`, as well as `a > b` implying `!(a < b)`; and
 /// - transitivity: `a < b` and `b < c` implies `a < c`. The same must hold for both `==` and `>`.
 ///
 /// Note that these requirements mean that the trait itself must be implemented symmetrically and
@@ -265,8 +261,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
     /// # Examples
     ///
     /// ```
-    /// use std::cmp::Ordering;
-    ///
     /// let result = 1.0 < 2.0;
     /// assert_eq!(result, true);
     ///

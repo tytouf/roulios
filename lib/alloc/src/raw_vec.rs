@@ -15,6 +15,7 @@ use heap;
 use super::oom;
 use super::boxed::Box;
 use core::ops::Drop;
+use core::cmp;
 use core;
 
 /// A low-level utility for more ergonomically allocating, reallocating, and deallocating a
@@ -65,7 +66,10 @@ impl<T> RawVec<T> {
             };
 
             // heap::EMPTY doubles as "unallocated" and "zero-sized allocation"
-            RawVec { ptr: Unique::new(heap::EMPTY as *mut T), cap: cap }
+            RawVec {
+                ptr: Unique::new(heap::EMPTY as *mut T),
+                cap: cap,
+            }
         }
     }
 
@@ -102,19 +106,25 @@ impl<T> RawVec<T> {
                 ptr
             };
 
-            RawVec { ptr: Unique::new(ptr as *mut _), cap: cap }
+            RawVec {
+                ptr: Unique::new(ptr as *mut _),
+                cap: cap,
+            }
         }
     }
 
     /// Reconstitutes a RawVec from a pointer and capacity.
     ///
-    /// # Undefined Behaviour
+    /// # Undefined Behavior
     ///
     /// The ptr must be allocated, and with the given capacity. The
     /// capacity cannot exceed `isize::MAX` (only a concern on 32-bit systems).
     /// If the ptr and capacity come from a RawVec, then this is guaranteed.
     pub unsafe fn from_raw_parts(ptr: *mut T, cap: usize) -> Self {
-        RawVec { ptr: Unique::new(ptr), cap: cap }
+        RawVec {
+            ptr: Unique::new(ptr),
+            cap: cap,
+        }
     }
 
     /// Converts a `Box<[T]>` into a `RawVec<T>`.
@@ -239,7 +249,7 @@ impl<T> RawVec<T> {
     ///
     /// If `used_cap` exceeds `self.cap()`, this may fail to actually allocate
     /// the requested space. This is not really unsafe, but the unsafe
-    /// code *you* write that relies on the behaviour of this function may break.
+    /// code *you* write that relies on the behavior of this function may break.
     ///
     /// # Panics
     ///
@@ -293,12 +303,12 @@ impl<T> RawVec<T> {
     /// Ensures that the buffer contains at least enough space to hold
     /// `used_cap + needed_extra_cap` elements. If it doesn't already have
     /// enough capacity, will reallocate enough space plus comfortable slack
-    /// space to get amortized `O(1)` behaviour. Will limit this behaviour
+    /// space to get amortized `O(1)` behavior. Will limit this behavior
     /// if it would needlessly cause itself to panic.
     ///
     /// If `used_cap` exceeds `self.cap()`, this may fail to actually allocate
     /// the requested space. This is not really unsafe, but the unsafe
-    /// code *you* write that relies on the behaviour of this function may break.
+    /// code *you* write that relies on the behavior of this function may break.
     ///
     /// This is ideal for implementing a bulk-push operation like `extend`.
     ///
@@ -345,15 +355,21 @@ impl<T> RawVec<T> {
             // panic.
 
             // Don't actually need any more capacity.
-            // Wrapping in case they give a bas `used_cap`
+            // Wrapping in case they give a bad `used_cap`
             if self.cap().wrapping_sub(used_cap) >= needed_extra_cap {
                 return;
             }
 
             // Nothing we can really do about these checks :(
-            let new_cap = used_cap.checked_add(needed_extra_cap)
-                                  .and_then(|cap| cap.checked_mul(2))
-                                  .expect("capacity overflow");
+            let required_cap = used_cap.checked_add(needed_extra_cap)
+                                       .expect("capacity overflow");
+
+            // Cannot overflow, because `cap <= isize::MAX`, and type of `cap` is `usize`.
+            let double_cap = self.cap * 2;
+
+            // `double_cap` guarantees exponential growth.
+            let new_cap = cmp::max(double_cap, required_cap);
+
             let new_alloc_size = new_cap.checked_mul(elem_size).expect("capacity overflow");
             // FIXME: may crash and burn on over-reserve
             alloc_guard(new_alloc_size);
@@ -398,8 +414,7 @@ impl<T> RawVec<T> {
         }
 
         // This check is my waterloo; it's the only thing Vec wouldn't have to do.
-        assert!(self.cap >= amount,
-                "Tried to shrink to a larger capacity");
+        assert!(self.cap >= amount, "Tried to shrink to a larger capacity");
 
         if amount == 0 {
             mem::replace(self, RawVec::new());
@@ -422,7 +437,7 @@ impl<T> RawVec<T> {
 
     /// Converts the entire buffer into `Box<[T]>`.
     ///
-    /// While it is not *strictly* Undefined Behaviour to call
+    /// While it is not *strictly* Undefined Behavior to call
     /// this procedure while some of the RawVec is unintialized,
     /// it cetainly makes it trivial to trigger it.
     ///
@@ -445,6 +460,7 @@ impl<T> RawVec<T> {
 }
 
 impl<T> Drop for RawVec<T> {
+    #[unsafe_destructor_blind_to_params]
     /// Frees the memory owned by the RawVec *without* trying to Drop its contents.
     fn drop(&mut self) {
         let elem_size = mem::size_of::<T>();
@@ -476,4 +492,43 @@ fn alloc_guard(alloc_size: usize) {
         assert!(alloc_size <= ::core::isize::MAX as usize,
                 "capacity overflow");
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reserve_does_not_overallocate() {
+        {
+            let mut v: RawVec<u32> = RawVec::new();
+            // First `reserve` allocates like `reserve_exact`
+            v.reserve(0, 9);
+            assert_eq!(9, v.cap());
+        }
+
+        {
+            let mut v: RawVec<u32> = RawVec::new();
+            v.reserve(0, 7);
+            assert_eq!(7, v.cap());
+            // 97 if more than double of 7, so `reserve` should work
+            // like `reserve_exact`.
+            v.reserve(7, 90);
+            assert_eq!(97, v.cap());
+        }
+
+        {
+            let mut v: RawVec<u32> = RawVec::new();
+            v.reserve(0, 12);
+            assert_eq!(12, v.cap());
+            v.reserve(12, 3);
+            // 3 is less than half of 12, so `reserve` must grow
+            // exponentially. At the time of writing this test grow
+            // factor is 2, so new capacity is 24, however, grow factor
+            // of 1.5 is OK too. Hence `>= 18` in assert.
+            assert!(v.cap() >= 12 + 12 / 2);
+        }
+    }
+
 }

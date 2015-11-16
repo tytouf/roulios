@@ -27,10 +27,15 @@
        html_root_url = "https://doc.rust-lang.org/nightly/",
        html_playground_url = "https://play.rust-lang.org/",
        issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
-       test(no_crate_inject))]
+       test(no_crate_inject, attr(allow(unused_variables), deny(warnings))))]
 
 #![allow(trivial_casts)]
 #![cfg_attr(test, allow(deprecated))] // rand
+
+// SNAP 1af31d4
+#![allow(unused_features)]
+// SNAP 1af31d4
+#![allow(unused_attributes)]
 
 #![feature(alloc)]
 #![feature(box_patterns)]
@@ -41,7 +46,6 @@
 #![feature(fmt_internals)]
 #![feature(fmt_radix)]
 #![feature(heap_api)]
-#![feature(iter_order)]
 #![feature(iter_arith)]
 #![feature(iter_arith)]
 #![feature(lang_items)]
@@ -55,13 +59,13 @@
 #![feature(staged_api)]
 #![feature(step_by)]
 #![feature(str_char)]
-#![feature(str_match_indices)]
 #![feature(unboxed_closures)]
 #![feature(unicode)]
 #![feature(unique)]
+#![feature(dropck_parametricity)]
 #![feature(unsafe_no_drop_flag, filling_drop)]
 #![feature(decode_utf16)]
-#![feature(utf8_error)]
+#![feature(drop_in_place)]
 #![cfg_attr(test, feature(clone_from_slice, rand, test))]
 
 #![feature(no_std)]

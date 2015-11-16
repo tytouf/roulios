@@ -94,7 +94,7 @@ pub trait Write {
         self.write_str(unsafe { str::from_utf8_unchecked(&utf_8[..bytes_written]) })
     }
 
-    /// Glue for usage of the `write!` macro with implementers of this trait.
+    /// Glue for usage of the `write!` macro with implementors of this trait.
     ///
     /// This method should generally not be invoked manually, but rather through
     /// the `write!` macro itself.
@@ -298,7 +298,7 @@ impl<'a> Display for Arguments<'a> {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -328,7 +328,7 @@ impl<'a> Display for Arguments<'a> {
 ///
 /// impl fmt::Debug for Point {
 ///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-///         write!(f, "({}, {})", self.x, self.y)
+///         write!(f, "Point {{ x: {}, y: {} }}", self.x, self.y)
 ///     }
 /// }
 ///
@@ -393,7 +393,7 @@ pub trait Debug {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -435,7 +435,7 @@ pub trait Display {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -482,7 +482,7 @@ pub trait Octal {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -523,14 +523,14 @@ pub trait Binary {
 
 /// Format trait for the `x` character.
 ///
-/// The `LowerHex` trait should format its output as a number in hexidecimal, with `a` through `f`
+/// The `LowerHex` trait should format its output as a number in hexadecimal, with `a` through `f`
 /// in lower case.
 ///
 /// The alternate flag, `#`, adds a `0x` in front of the output.
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -571,14 +571,14 @@ pub trait LowerHex {
 
 /// Format trait for the `X` character.
 ///
-/// The `UpperHex` trait should format its output as a number in hexidecimal, with `A` through `F`
+/// The `UpperHex` trait should format its output as a number in hexadecimal, with `A` through `F`
 /// in upper case.
 ///
 /// The alternate flag, `#`, adds a `0x` in front of the output.
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -620,11 +620,11 @@ pub trait UpperHex {
 /// Format trait for the `p` character.
 ///
 /// The `Pointer` trait should format its output as a memory location. This is commonly presented
-/// as hexidecimal.
+/// as hexadecimal.
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -668,7 +668,7 @@ pub trait Pointer {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -711,7 +711,7 @@ pub trait LowerExp {
 ///
 /// For more information on formatters, see [the module-level documentation][module].
 ///
-/// [module]: ../index.html
+/// [module]: ../../std/fmt/index.html
 ///
 /// # Examples
 ///
@@ -1098,43 +1098,36 @@ impl<'a> Formatter<'a> {
     pub fn flags(&self) -> u32 { self.flags }
 
     /// Character used as 'fill' whenever there is alignment
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn fill(&self) -> char { self.fill }
 
     /// Flag indicating what form of alignment was requested
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
+    #[unstable(feature = "fmt_flags_align", reason = "method was just created",
                issue = "27726")]
     pub fn align(&self) -> Alignment { self.align }
 
     /// Optionally specified integer width that the output should be
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn width(&self) -> Option<usize> { self.width }
 
     /// Optionally specified precision for numeric types
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn precision(&self) -> Option<usize> { self.precision }
 
     /// Determines if the `+` flag was specified.
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn sign_plus(&self) -> bool { self.flags & (1 << FlagV1::SignPlus as u32) != 0 }
 
     /// Determines if the `-` flag was specified.
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn sign_minus(&self) -> bool { self.flags & (1 << FlagV1::SignMinus as u32) != 0 }
 
     /// Determines if the `#` flag was specified.
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn alternate(&self) -> bool { self.flags & (1 << FlagV1::Alternate as u32) != 0 }
 
     /// Determines if the `0` flag was specified.
-    #[unstable(feature = "fmt_flags", reason = "method was just created",
-               issue = "27726")]
+    #[stable(feature = "fmt_flags", since = "1.5.0")]
     pub fn sign_aware_zero_pad(&self) -> bool {
         self.flags & (1 << FlagV1::SignAwareZeroPad as u32) != 0
     }
@@ -1332,11 +1325,21 @@ impl Display for bool {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl Debug for str {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        try!(write!(f, "\""));
-        for c in self.chars().flat_map(|c| c.escape_default()) {
-            try!(f.write_char(c))
+        try!(f.write_char('"'));
+        let mut from = 0;
+        for (i, c) in self.char_indices() {
+            let esc = c.escape_default();
+            // If char needs escaping, flush backlog so far and write, else skip
+            if esc.size_hint() != (1, Some(1)) {
+                try!(f.write_str(&self[from..i]));
+                for c in esc {
+                    try!(f.write_char(c));
+                }
+                from = i + c.len_utf8();
+            }
         }
-        write!(f, "\"")
+        try!(f.write_str(&self[from..]));
+        f.write_char('"')
     }
 }
 
@@ -1350,12 +1353,11 @@ impl Display for str {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl Debug for char {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        use char::CharExt;
-        try!(write!(f, "'"));
+        try!(f.write_char('\''));
         for c in self.escape_default() {
             try!(f.write_char(c))
         }
-        write!(f, "'")
+        f.write_char('\'')
     }
 }
 

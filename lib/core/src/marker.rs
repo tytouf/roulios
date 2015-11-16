@@ -18,11 +18,12 @@
 
 use clone::Clone;
 use cmp;
+use default::Default;
 use option::Option;
 use hash::Hash;
 use hash::Hasher;
 
-/// Types able to be transferred across thread boundaries.
+/// Types that can be transferred across thread boundaries.
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "send"]
 #[rustc_on_unimplemented = "`{Self}` cannot be sent between threads safely"]
@@ -36,6 +37,18 @@ impl<T> !Send for *const T { }
 impl<T> !Send for *mut T { }
 
 /// Types with a constant size known at compile-time.
+///
+/// All type parameters which can be bounded have an implicit bound of `Sized`. The special syntax
+/// `?Sized` can be used to remove this bound if it is not appropriate.
+///
+/// ```
+/// # #![allow(dead_code)]
+/// struct Foo<T>(T);
+/// struct Bar<T: ?Sized>(T);
+///
+/// // struct FooUse(Foo<[i32]>); // error: Sized is not implemented for [i32]
+/// struct BarUse(Bar<[i32]>); // OK
+/// ```
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "sized"]
 #[rustc_on_unimplemented = "`{Self}` does not have a constant size known at compile-time"]
@@ -94,6 +107,7 @@ pub trait Unsize<T: ?Sized> {
 /// `struct` can be `Copy`:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// struct Point {
 ///    x: i32,
 ///    y: i32,
@@ -103,6 +117,7 @@ pub trait Unsize<T: ?Sized> {
 /// A `struct` can be `Copy`, and `i32` is `Copy`, so therefore, `Point` is eligible to be `Copy`.
 ///
 /// ```
+/// # #![allow(dead_code)]
 /// # struct Point;
 /// struct PointList {
 ///     points: Vec<Point>,
@@ -172,7 +187,7 @@ pub trait Copy : Clone {
 ///
 /// A somewhat surprising consequence of the definition is `&mut T` is
 /// `Sync` (if `T` is `Sync`) even though it seems that it might
-/// provide unsynchronised mutation. The trick is a mutable reference
+/// provide unsynchronized mutation. The trick is a mutable reference
 /// stored in an aliasable reference (that is, `& &mut T`) becomes
 /// read-only, as if it were a `& &T`, hence there is no risk of a data
 /// race.
@@ -195,7 +210,7 @@ pub trait Copy : Clone {
 ///
 /// Any types with interior mutability must also use the `std::cell::UnsafeCell`
 /// wrapper around the value(s) which can be mutated when behind a `&`
-/// reference; not doing this is undefined behaviour (for example,
+/// reference; not doing this is undefined behavior (for example,
 /// `transmute`-ing from `&T` to `&mut T` is invalid).
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "sync"]
@@ -245,6 +260,12 @@ macro_rules! impls{
                 $t
             }
         }
+
+        impl<T:?Sized> Default for $t<T> {
+            fn default() -> $t<T> {
+                $t
+            }
+        }
         )
 }
 
@@ -285,6 +306,7 @@ macro_rules! impls{
 /// ```
 /// use std::marker::PhantomData;
 ///
+/// # #[allow(dead_code)]
 /// struct Slice<'a, T:'a> {
 ///     start: *const T,
 ///     end: *const T,
@@ -305,6 +327,7 @@ macro_rules! impls{
 /// mismatches by enforcing types in the method implementations:
 ///
 /// ```
+/// # #![allow(dead_code)]
 /// # trait ResType { fn foo(&self); }
 /// # struct ParamType;
 /// # mod foreign_lib {
@@ -364,16 +387,19 @@ mod impls {
     unsafe impl<'a, T: Send + ?Sized> Send for &'a mut T {}
 }
 
-/// A marker trait indicates a type that can be reflected over. This
-/// trait is implemented for all types. Its purpose is to ensure that
-/// when you write a generic function that will employ reflection,
-/// that must be reflected (no pun intended) in the generic bounds of
-/// that function. Here is an example:
+/// Types that can be reflected over.
+///
+/// This trait is implemented for all types. Its purpose is to ensure
+/// that when you write a generic function that will employ
+/// reflection, that must be reflected (no pun intended) in the
+/// generic bounds of that function. Here is an example:
 ///
 /// ```
 /// #![feature(reflect_marker)]
 /// use std::marker::Reflect;
 /// use std::any::Any;
+///
+/// # #[allow(dead_code)]
 /// fn foo<T:Reflect+'static>(x: &T) {
 ///     let any: &Any = x;
 ///     if any.is::<u32>() { println!("u32"); }
@@ -381,7 +407,7 @@ mod impls {
 /// ```
 ///
 /// Without the declaration `T:Reflect`, `foo` would not type check
-/// (note: as a matter of style, it would be preferable to to write
+/// (note: as a matter of style, it would be preferable to write
 /// `T:Any`, because `T:Any` implies `T:Reflect` and `T:'static`, but
 /// we use `Reflect` here to show how it works). The `Reflect` bound
 /// thus serves to alert `foo`'s caller to the fact that `foo` may

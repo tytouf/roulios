@@ -55,11 +55,22 @@ macro_rules! impl_full_ops {
     ($($ty:ty: add($addfn:path), mul/div($bigty:ident);)*) => (
         $(
             impl FullOps for $ty {
+                #[cfg(stage0)]
                 fn full_add(self, other: $ty, carry: bool) -> (bool, $ty) {
                     // this cannot overflow, the output is between 0 and 2*2^nbits - 1
                     // FIXME will LLVM optimize this into ADC or similar???
                     let (v, carry1) = unsafe { $addfn(self, other) };
                     let (v, carry2) = unsafe { $addfn(v, if carry {1} else {0}) };
+                    (carry1 || carry2, v)
+                }
+                #[cfg(not(stage0))]
+                fn full_add(self, other: $ty, carry: bool) -> (bool, $ty) {
+                    // this cannot overflow, the output is between 0 and 2*2^nbits - 1
+                    // FIXME will LLVM optimize this into ADC or similar???
+                    let (v, carry1) = unsafe { intrinsics::add_with_overflow(self, other) };
+                    let (v, carry2) = unsafe {
+                        intrinsics::add_with_overflow(v, if carry {1} else {0})
+                    };
                     (carry1 || carry2, v)
                 }
 
@@ -110,7 +121,7 @@ macro_rules! define_bignum {
     ($name:ident: type=$ty:ty, n=$n:expr) => (
         /// Stack-allocated arbitrary-precision (up to certain limit) integer.
         ///
-        /// This is backed by an fixed-size array of given type ("digit").
+        /// This is backed by a fixed-size array of given type ("digit").
         /// While the array is not very large (normally some hundred bytes),
         /// copying it recklessly may result in the performance hit.
         /// Thus this is intentionally not `Copy`.

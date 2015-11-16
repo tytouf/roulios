@@ -106,6 +106,7 @@ pub use core::slice::{Chunks, Windows};
 pub use core::slice::{Iter, IterMut};
 pub use core::slice::{SplitMut, ChunksMut, Split};
 pub use core::slice::{SplitN, RSplitN, SplitNMut, RSplitNMut};
+#[allow(deprecated)]
 pub use core::slice::{bytes, mut_ref_slice, ref_slice};
 pub use core::slice::{from_raw_parts, from_raw_parts_mut};
 
@@ -159,7 +160,6 @@ mod hack {
 /// Allocating extension methods for slices.
 #[lang = "slice"]
 #[cfg(not(test))]
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> [T] {
     /// Returns the number of elements in the slice.
     ///
@@ -214,21 +214,21 @@ impl<T> [T] {
     }
 
     /// Returns the first and all the rest of the elements of a slice.
-    #[unstable(feature = "slice_splits", reason = "new API", issue = "27742")]
+    #[stable(feature = "slice_splits", since = "1.5.0")]
     #[inline]
     pub fn split_first(&self) -> Option<(&T, &[T])> {
         core_slice::SliceExt::split_first(self)
     }
 
     /// Returns the first and all the rest of the elements of a slice.
-    #[unstable(feature = "slice_splits", reason = "new API", issue = "27742")]
+    #[stable(feature = "slice_splits", since = "1.5.0")]
     #[inline]
     pub fn split_first_mut(&mut self) -> Option<(&mut T, &mut [T])> {
         core_slice::SliceExt::split_first_mut(self)
     }
 
     /// Returns the last and all the rest of the elements of a slice.
-    #[unstable(feature = "slice_splits", reason = "new API", issue = "27742")]
+    #[stable(feature = "slice_splits", since = "1.5.0")]
     #[inline]
     pub fn split_last(&self) -> Option<(&T, &[T])> {
         core_slice::SliceExt::split_last(self)
@@ -236,7 +236,7 @@ impl<T> [T] {
     }
 
     /// Returns the last and all the rest of the elements of a slice.
-    #[unstable(feature = "slice_splits", reason = "new API", issue = "27742")]
+    #[stable(feature = "slice_splits", since = "1.5.0")]
     #[inline]
     pub fn split_last_mut(&mut self) -> Option<(&mut T, &mut [T])> {
         core_slice::SliceExt::split_last_mut(self)
@@ -454,6 +454,8 @@ impl<T> [T] {
     /// The first will contain all indices from `[0, mid)` (excluding
     /// the index `mid` itself) and the second will contain all
     /// indices from `[mid, len)` (excluding the index `len` itself).
+    ///
+    /// # Panics
     ///
     /// Panics if `mid > len`.
     ///
@@ -729,6 +731,8 @@ impl<T> [T] {
     ///
     /// This is equivalent to `self.sort_by(|a, b| a.cmp(b))`.
     ///
+    /// This is a stable sort.
+    ///
     /// # Examples
     ///
     /// ```rust
@@ -848,6 +852,7 @@ pub trait SliceConcatExt<T: ?Sized> {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(deprecated)]
     /// assert_eq!(["hello", "world"].connect(" "), "hello world");
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -1062,6 +1067,18 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
                 // `len`, so these are in bounds.
                 let mut out = buf_tmp.offset(start as isize);
                 let out_end = buf_tmp.offset(right_end_idx as isize);
+
+                // If left[last] <= right[0], they are already in order:
+                // fast-forward the left side (the right side is handled
+                // in the loop).
+                // If `right` is not empty then left is not empty, and
+                // the offsets are in bounds.
+                if right != right_end && compare(&*right.offset(-1), &*right) != Greater {
+                    let elems = (right_start as usize - left as usize) / mem::size_of::<T>();
+                    ptr::copy_nonoverlapping(&*left, out, elems);
+                    out = out.offset(elems as isize);
+                    left = right_start;
+                }
 
                 while out < out_end {
                     // Either the left or the right run are exhausted,

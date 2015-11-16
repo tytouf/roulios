@@ -230,7 +230,6 @@ impl<T> LinkedList<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Default for LinkedList<T> {
     #[inline]
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn default() -> LinkedList<T> { LinkedList::new() }
 }
 
@@ -655,6 +654,7 @@ impl<T> LinkedList<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Drop for LinkedList<T> {
+    #[unsafe_destructor_blind_to_params]
     fn drop(&mut self) {
         // Dissolve the linked_list in a loop.
         // Just dropping the list_head can lead to stack exhaustion
