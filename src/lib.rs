@@ -7,6 +7,7 @@
 #![feature(asm)]
 #![feature(lang_items)]
 #![feature(ptr_as_ref)]
+#![feature(fnbox)]
 #![no_std]
 
 extern crate volatile;
@@ -161,13 +162,12 @@ pub fn start() -> ! {
     ks.tasks.spawn_task(task_1);
     ks.tasks.spawn_task(task_2);
     ks.tasks.spawn_task(task_3);
-    /*
     ks.tasks.spawn_task(move || {
         loop {
             puts(&ser, "moved 4\n");
+            cpu::cortex_m3::svc();
         }
     });
-    */
 
     cpu::cortex_m3::enable_interrupts();
 

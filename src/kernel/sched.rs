@@ -1,5 +1,5 @@
 
-use alloc::boxed::Box;
+use alloc::boxed::{Box, FnBox};
 use collections::Vec;
 
 enum State {
@@ -46,6 +46,11 @@ fn task_is_finished() {
     loop { }; // TODO: kill task
 }
 
+fn start_thread(arg: u32) {
+    let f: Box<Box<FnBox()>> = unsafe { Box::from_raw(arg as *mut _) };
+    f();
+}
+
 impl TaskList {
     pub fn new() -> TaskList {
         TaskList { tasks: Vec::new(), current: 0 }
@@ -72,9 +77,9 @@ impl TaskList {
     }
 
     pub fn spawn_task<F>(&mut self, f: F) where F: FnOnce() -> (), F: 'static {
-        //let bf = Box::new(f);
-        //let pc = Box::into_raw(bf) as u32; //unsafe { *(&f as *const _ as *const u32) };
-        let pc = unsafe { *(&f as *const _ as *const u32) };
+        //let pc = unsafe { *(&f as *const _ as *const u32) };
+        let box_fn: Box<Box<FnBox()>> = Box::new(Box::new(f));
+        let box_fn_addr = Box::into_raw(box_fn) as *mut _ as u32; //*(&box_fn as *const _) as u32; //unsafe { *(&f as *const _ as *const u32) };
 
         let stack_mem = Box::new(Stack {
             stack_size: [0u8; 192],
@@ -86,13 +91,13 @@ impl TaskList {
             r6: 0,
             r5: 0,
             r4: 0,
-            r0: 0,
+            r0: box_fn_addr,
             r1: 0,
             r2: 0,
             r3: 0x1004,
             r12: 0x1003,
             lr: unsafe { *(&task_is_finished as *const _ as *const u32) },
-            pc: pc,
+            pc: unsafe { *(&start_thread as *const _ as *const u32) },
             psr: 0x21000000, // PSR thumb bit FIXME are you sure?
         });
         let stack_ptr = (&*stack_mem as *const _ as usize) + 192;
