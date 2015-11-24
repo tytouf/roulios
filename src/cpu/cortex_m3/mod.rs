@@ -19,6 +19,30 @@ pub unsafe extern fn abort() {
     loop { }
 }
 
+#[no_mangle]
+pub unsafe extern fn bus_fault() {
+    asm!("bkpt");
+    loop { }
+}
+
+#[no_mangle]
+pub unsafe extern fn mem_mgt() {
+    asm!("bkpt");
+    loop { }
+}
+
+#[no_mangle]
+pub unsafe extern fn usage_fault() {
+    asm!("bkpt");
+    loop { }
+}
+
+#[no_mangle]
+pub unsafe extern fn hard_fault() {
+    asm!("bkpt");
+    loop { }
+}
+
 pub fn wait_for_event() {
     unsafe { asm!("wfe"); }
 }

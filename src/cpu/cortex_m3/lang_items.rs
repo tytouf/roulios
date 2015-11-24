@@ -11,7 +11,7 @@ pub fn eh_personality() {
 }
 
 #[lang="eh_unwind_resume"]
-pub fn eh_unwind_resume() {
+pub fn eh_unwind_resume(panic_ctx: *mut u8) {
     loop { }
 }
 
