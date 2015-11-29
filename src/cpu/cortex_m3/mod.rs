@@ -7,38 +7,38 @@ pub mod mem;
 mod lang_items;
 
 #[no_mangle]
-pub unsafe extern fn reset_handler() {
+pub unsafe extern "C" fn reset_handler() {
     mem::init_mem();
 
     ::start();
 }
 
 #[no_mangle]
-pub unsafe extern fn abort() {
+pub unsafe extern "C" fn abort() {
     asm!("bkpt");
     loop { }
 }
 
 #[no_mangle]
-pub unsafe extern fn bus_fault() {
+pub unsafe extern "C" fn bus_fault() {
     asm!("bkpt");
     loop { }
 }
 
 #[no_mangle]
-pub unsafe extern fn mem_mgt() {
+pub unsafe extern "C" fn mem_mgt() {
     asm!("bkpt");
     loop { }
 }
 
 #[no_mangle]
-pub unsafe extern fn usage_fault() {
+pub unsafe extern "C" fn usage_fault() {
     asm!("bkpt");
     loop { }
 }
 
 #[no_mangle]
-pub unsafe extern fn hard_fault() {
+pub unsafe extern "C" fn hard_fault() {
     asm!("bkpt");
     loop { }
 }

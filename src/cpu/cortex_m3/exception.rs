@@ -1,7 +1,7 @@
 use core::option::Option::{Some, self};
 use cpu::cortex_m3::{reset_handler, abort, hard_fault, mem_mgt, bus_fault, usage_fault};
 
-extern {
+extern "C" {
     fn __STACK_TOP__();
     pub fn systick_handler();
     pub fn pendsv_handler();

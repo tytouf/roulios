@@ -43,7 +43,7 @@ pub struct TaskList {
 }
 
 fn task_is_finished() {
-    loop { }; // TODO: kill task
+    loop { }; // TODO: kill task by calling syscall
 }
 
 fn start_thread(arg: u32) {
@@ -105,5 +105,9 @@ impl TaskList {
         let mut task = Box::new(Task {
             stack_mem: stack_mem, stack_ptr: stack_ptr, state: State::Ready });
         self.tasks.push(task);
+    }
+
+    pub fn destroy_current_task(&mut self) {
+        self.tasks.remove(self.current);
     }
 }
