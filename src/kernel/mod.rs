@@ -27,7 +27,7 @@ pub fn handle_exception(sp: u32, state: &mut KernelState) -> usize {
 }
 
 #[no_mangle] // this function is called by asm
-pub fn handle_syscall(sp: u32, state: &mut KernelState) -> usize {
+pub fn handle_syscall(sp: u32, state: &mut KernelState, num: u32) -> usize {
     {
         let cur_task = state.tasks.get_current_task_mut();
         cur_task.stack_ptr = sp as usize;

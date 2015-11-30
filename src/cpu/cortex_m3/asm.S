@@ -32,6 +32,11 @@ THUMB_FUNC(systick_handler)
 
 THUMB_FUNC(svc_handler)
   mrs r0, psp
+
+  ldr r1, [r0, 24]  /* Retrieve svc number by decoding opcode */
+  sub r1, r1, 2
+  ldrb r2, [r1]
+
   stmdb r0!, {r4-r11}
   msr psp, r0
 
