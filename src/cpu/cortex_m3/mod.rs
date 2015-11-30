@@ -59,6 +59,13 @@ pub fn svc() {
     unsafe { asm!("svc 0"); }
 }
 
+#[macro_export]
+macro_rules! svc {
+    ($number:expr) => {
+        unsafe { asm!(concat!("svc ", $number)); }
+    }
+}
+
 pub fn enable_interrupts() {
     unsafe { asm!("cpsie i"); }
 }

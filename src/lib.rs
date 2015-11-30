@@ -14,6 +14,7 @@ extern crate volatile;
 extern crate alloc;
 extern crate collections;
 
+#[macro_use]
 pub mod cpu;
 pub mod boards;
 pub mod kernel;
