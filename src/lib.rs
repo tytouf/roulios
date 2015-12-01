@@ -183,6 +183,7 @@ pub fn start() -> ! {
 
 
 
+// TODO: these functions should be in rt
 #[inline(never)]
 unsafe fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8 {
     let mut i = 0;
@@ -193,15 +194,26 @@ unsafe fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8 {
     return s;
 }
 
-// TODO: these functions should be in rt
-pub unsafe extern fn memclr(s: *mut u8, n: usize) -> *mut u8 {
-    memset(s, 0, n)
-}
 #[no_mangle]
-pub unsafe extern fn __aeabi_memclr(s: *mut u8, n: usize) -> *mut u8 {
-    memset(s, 0, n)
+pub unsafe extern "C" fn __aeabi_memclr4(s: *mut u32, n: usize) {
+    let mut n = n;
+    let mut dest = s;
+    while n != 0 {
+        *dest = 0;
+        dest = dest.offset(1);
+        n -= 4;
+    }
 }
+
 #[no_mangle]
-pub unsafe extern fn __aeabi_memclr4(s: *mut u8, n: usize) -> *mut u8 {
-    memset(s, 0, n)
+pub unsafe extern "C" fn __aeabi_memcpy4(dest: *mut u32, src: *const u32, n: usize) {
+    let mut i = 0;
+    let mut dest = dest;
+    let mut src = src;
+    while i < n {
+        *dest = *src;
+        dest = dest.offset(1);
+        src = src.offset(1);
+        i += 4;
+    }
 }

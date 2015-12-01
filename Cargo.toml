@@ -10,7 +10,7 @@ crate-type = ["staticlib"]
 
 [profile.release]
 lto = true
-opt-level = 1
+opt-level = 3
 debug = true
 
 [features]

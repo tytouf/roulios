@@ -55,6 +55,7 @@ pub fn nop() {
     unsafe { asm!("nop"); }
 }
 
+#[inline(never)]
 pub fn svc() {
     unsafe { asm!("svc 0"); }
 }
@@ -74,6 +75,7 @@ pub fn disable_interrupts() {
     unsafe { asm!("cpsid i"); }
 }
 
+#[inline(never)]
 pub fn set_psp(sp: u32) {
     unsafe { asm!("msr psp, $0" :: "r"(sp)); }
 }
