@@ -15,7 +15,7 @@ Then simply run:
 ## Run on qemu
 
 At the moment only the STM32-P103 from Olimex board is supported. If you don't have that board,
-you can still run it by using a specific version of Qemu found here:
+you can still run it by using a specific version of Qemu found [here](https://github.com/beckus/qemu_stm32/releases/tag/stm32_v0.1.3):
 
     ./configure --disable-werror --enable-debug \
         --target-list="arm-softmmu" \
