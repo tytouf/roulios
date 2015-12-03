@@ -44,38 +44,32 @@ pub unsafe extern "C" fn hard_fault() {
 }
 
 pub fn wait_for_event() {
-    unsafe { asm!("wfe"); }
+    unsafe { asm!("wfe" :::: "volatile"); }
 }
 
 pub fn wait_for_interrupt() {
-    unsafe { asm!("wfi"); }
+    unsafe { asm!("wfi" :::: "volatile"); }
 }
 
 pub fn nop() {
-    unsafe { asm!("nop"); }
-}
-
-#[inline(never)]
-pub fn svc() {
-    unsafe { asm!("svc 0"); }
+    unsafe { asm!("nop" :::: "volatile"); }
 }
 
 #[macro_export]
 macro_rules! svc {
     ($number:expr) => {
-        unsafe { asm!(concat!("svc ", $number)); }
+        unsafe { asm!(concat!("svc ", $number) :::: "volatile"); }
     }
 }
 
 pub fn enable_interrupts() {
-    unsafe { asm!("cpsie i"); }
+    unsafe { asm!("cpsie i" :::: "volatile"); }
 }
 
 pub fn disable_interrupts() {
-    unsafe { asm!("cpsid i"); }
+    unsafe { asm!("cpsid i" :::: "volatile"); }
 }
 
-#[inline(never)]
 pub fn set_psp(sp: u32) {
-    unsafe { asm!("msr psp, $0" :: "r"(sp)); }
+    unsafe { asm!("msr psp, $0" :: "r"(sp) :: "volatile"); }
 }

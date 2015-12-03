@@ -99,7 +99,7 @@ fn task_1() {
     let uart = Usart::new(usart2());
     loop {
         puts(&uart, "task 1!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
     }
 }
 
@@ -107,7 +107,7 @@ fn task_2() {
     let uart = Usart::new(usart2());
     loop {
         puts(&uart, "task 2!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
     }
 }
 
@@ -115,11 +115,11 @@ fn task_3() {
     let uart = Usart::new(usart2());
     loop {
         puts(&uart, "task 3 part 1!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
         puts(&uart, "task 3 part 2!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
         puts(&uart, "task 3 part 3!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
     }
 }
 
@@ -127,7 +127,7 @@ fn task_4() {
     let uart = Usart::new(usart2());
     loop {
         puts(&uart, "task 4!\n");
-        cpu::cortex_m3::svc();
+        svc!(0);
     }
 }
 
@@ -165,9 +165,14 @@ pub fn start() -> ! {
     ks.tasks.spawn_task(task_2);
     ks.tasks.spawn_task(task_3);
     ks.tasks.spawn_task(move || {
+        let mut counter = 0;
         loop {
             puts(&ser, "moved 4\n");
-            cpu::cortex_m3::svc();
+            svc!(1);
+            counter += 1;
+            if counter == 30 {
+                loop {}
+            }
         }
     });
 
